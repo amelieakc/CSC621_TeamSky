@@ -5,7 +5,7 @@
 
 int main(int argc, char* argv[])
 {
-	if(argc < 2 || (strcmp(argv[1], "-h") == 0) || strcmp(argv[1], "--help")) {
+	if(argc < 2 || (strcmp(argv[1], "-h") == 0) || strcmp(argv[1], "--help") == 0) {
 		// display help	
 		std::cout << "Team Sky ITK" << std::endl;
 		std::cout << "-h \tdisplay help" << std::endl;
@@ -15,7 +15,7 @@ int main(int argc, char* argv[])
 	}
 	else if(strcmp(argv[1], "-r") == 0) {
 		std::cout << "Registration" << std::endl;
-		// do regiatration stuff
+		// do registration stuff
 	}
 	else if(strcmp(argv[1], "-s") == 0) {
 		std::cout << "Segmentation" << std::endl;
