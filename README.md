@@ -1,12 +1,16 @@
 # CSC621_TeamSky
 
-Run application from Build/Debug/TeamSky.exe [args]
-
-Possible args are:
--h, --help 	Display help menu
--r 	Registration
--s	Segmentation
-
-More options to be added later.
+## Description
 
 The application then runs an ITK hello world example. 
+
+## Example
+
+Run application from Build/Debug/TeamSky.exe [args]<br />
+
+Possible args are:<br />
+-h, --help 	Display help menu<br />
+-r 	Registration<br />
+-s	Segmentation<br />
+
+More options to be added later.
