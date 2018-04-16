@@ -9,13 +9,14 @@ This application applies ITK image processing algorithms.<br />
 Run application from Build/Debug/TeamSky.exe [args]<br />
 
 Possible args are:<br />
+
 | Option | Description |
 | --- | --- |
-| -h, --help | Display help menu |
-| -r | Registration |
-| -s | Segmentation |
-| -3d | Create 3D image from multiple 2D images<br />
-**Usage**: TeamSky.exe -3d image_dir number_of_images<br />
+| \-h, \-\-help | Display help menu |
+| \-r | Registration |
+| \-s | Segmentation |
+| \-3d | Create 3D image from multiple 2D images<br />
+**Usage**: TeamSky.exe \-3d image_dir number_of_images<br />
 Where image_dir is a directory containing images named like 000000.dcm and number_of_images is the number of 2D images that will be used to create the 3D image. |
 
 ## Examples
