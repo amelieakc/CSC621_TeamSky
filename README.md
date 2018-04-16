@@ -15,9 +15,7 @@ Possible args are:<br />
 | \-h, \-\-help | Display help menu |
 | \-r | Registration |
 | \-s | Segmentation |
-| \-3d | Create 3D image from multiple 2D images<br />
-**Usage**: TeamSky.exe \-3d image_dir number_of_images<br />
-Where image_dir is a directory containing images named like 000000.dcm and number_of_images is the number of 2D images that will be used to create the 3D image. |
+| \-3d | Create 3D image from multiple 2D images |
 
 ## Examples
 
