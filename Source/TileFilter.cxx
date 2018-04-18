@@ -11,19 +11,6 @@
 #include <sys/stat.h>
 #include <typeinfo>
 
-typedef unsigned char VolPixelType;
-
-const unsigned int VolInputDimension = 2;
-const unsigned int VolOutputDimension = 3;
-
-typedef itk::Image<VolPixelType, VolInputDimension> VolInputImageType;
-typedef itk::Image<VolPixelType, VolOutputDimension> VolOutputImageType;
-
-typedef itk::ImageFileReader<VolInputImageType> VolReaderType;
-typedef itk::ImageFileWriter<VolOutputImageType> VolWriterType;
-
-typedef itk::TileImageFilter <VolInputImageType, VolOutputImageType> TilerType;
-
 // Function prototypes
 std::string createVolumeFromFiles(char*, int);
 
@@ -36,6 +23,19 @@ std::string createVolumeFromFiles(char*, int);
 */
 std::string createVolumeFromFiles(char* image_dir, int num_files)
 {
+	typedef unsigned char VolPixelType;
+
+	const unsigned int VolInputDimension = 2;
+	const unsigned int VolOutputDimension = 3;
+
+	typedef itk::Image<VolPixelType, VolInputDimension> VolInputImageType;
+	typedef itk::Image<VolPixelType, VolOutputDimension> VolOutputImageType;
+
+	typedef itk::ImageFileReader<VolInputImageType> VolReaderType;
+	typedef itk::ImageFileWriter<VolOutputImageType> VolWriterType;
+
+	typedef itk::TileImageFilter <VolInputImageType, VolOutputImageType> TilerType;
+
 	// testing
 	printf("Reading %d files from directrory: %s\n", num_files, image_dir);
 
