@@ -11,16 +11,6 @@
 #include <stdio.h>
 #include <sys/stat.h>
 
-typedef unsigned char MedPixelType;
-const unsigned int Dimension = 3;
-
-typedef itk::Image<MedPixelType, Dimension> MedImageType;
-
-typedef itk::ImageFileReader<MedImageType> MedReaderType;
-typedef itk::ImageFileWriter<MedImageType> MedWriterType;
-
-typedef itk::MedianImageFilter<MedImageType, MedImageType> MedFilterType;
-
 // Function prototypes
 std::string medianFilter(char*, int);
 
@@ -33,6 +23,16 @@ Returns empty string, "", if an error occured.
 */
 std::string medianFilter(char* filename, int r)
 {
+	typedef unsigned char MedPixelType;
+	const unsigned int MedDimension = 3;
+
+	typedef itk::Image<MedPixelType, MedDimension> MedImageType;
+
+	typedef itk::ImageFileReader<MedImageType> MedReaderType;
+	typedef itk::ImageFileWriter<MedImageType> MedWriterType;
+
+	typedef itk::MedianImageFilter<MedImageType, MedImageType> MedFilterType;
+
 	// testing
 	printf("Applying median filter with a radius of %d to file: %s\n", r, filename);
 

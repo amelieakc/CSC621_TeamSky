@@ -2,6 +2,7 @@
 #include "itkImage.h"
 #include "TileFilter.cxx"
 #include "SmoothingFilters.cxx"
+#include "WatershedSegmentation.cxx"
 
 #include <iostream>
 #include <stdio.h>
@@ -15,7 +16,7 @@ int main(int argc, char* argv[])
 		printf("%-30s\n", "Team Sky ITK");
 		printf("%-30s %-30s\n", "-h", "Display help menu");
 		printf("%-30s %-30s\n", "-r", "Registration");
-		printf("%-30s %-30s\n", "-s threshold level", "Apply watershed segmentation with given threshold and level");
+		printf("%-30s %-30s\n", "-s image threshold level", "Apply watershed segmentation with given threshold and level");
 		printf("%-30s %-30s\n", "-3D image_dir num", "Create 3D image from multiple 2D images");
 		printf("%-30s %-30s\n", "-f filter_name [args]", "Apply filter to image. Filters supported: median");
 		std::cout << std::endl;
@@ -26,8 +27,25 @@ int main(int argc, char* argv[])
 		// do registration stuff
 	}
 	else if(strcmp(argv[1], "-s") == 0) {
-		std::cout << "Segmentation" << std::endl;
-		// do segmentation stuff
+		std::cout << "Watershed Segmentation" << std::endl;
+		// Check watershed segmentation args
+		if(argc != 5) {
+			std::cerr << "ERROR: Invalid number of args" << std::endl;
+			std::cerr << "Usage: TeamSky.exe -s image threshold level" << std::endl;
+			return EXIT_FAILURE;
+		}
+		else {
+			std::string seg_filename = watershedSegmentation(argv[2], atof(argv[3]), atof(argv[4]));
+			if(seg_filename.empty()) {
+				// file was not created or segmentation failed
+				std::cerr << "ERROR: Could not complete watershed segmentation" << std::endl;
+				return EXIT_FAILURE;
+			}
+			else {
+				// file was created, watershed segmentation complete
+				std::cout << "Watershed segmentation complete: " << seg_filename << std::endl;
+			}
+		}
 	}
 	else if(strcmp(argv[1], "-3D") == 0 || strcmp(argv[1], "-3d") == 0) {
 		std::cout << "Create 3D image from multiple 2D images" << std::endl;
@@ -40,7 +58,7 @@ int main(int argc, char* argv[])
 		else {
 			// Use tile image filter to create 3D image from provided files
 			std::string volume_filename = createVolumeFromFiles(argv[2], atoi(argv[3]));
-			if(strcmp(volume_filename.c_str(), "") == 0) {
+			if(volume_filename.empty()) {
 				// file was not created
 				std::cerr << "ERROR: Could not create 3D image" << std::endl;
 				return EXIT_FAILURE;
