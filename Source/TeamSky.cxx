@@ -1,7 +1,8 @@
-
-#include "itkImage.h"
+#include "TileFilter.h"
 #include "TileFilter.cxx"
+#include "SmoothingFilters.h"
 #include "SmoothingFilters.cxx"
+#include "WatershedSegmentation.h"
 #include "WatershedSegmentation.cxx"
 
 #include <iostream>
@@ -35,7 +36,8 @@ int main(int argc, char* argv[])
 			return EXIT_FAILURE;
 		}
 		else {
-			std::string seg_filename = watershedSegmentation(argv[2], atof(argv[3]), atof(argv[4]));
+			WatershedSegmentation watershed = WatershedSegmentation(argv[2]);
+			std::string seg_filename = watershed.applyWatershedSegmentation(atof(argv[3]), atof(argv[4]));
 			if(seg_filename.empty()) {
 				// file was not created or segmentation failed
 				std::cerr << "ERROR: Could not complete watershed segmentation" << std::endl;
@@ -57,7 +59,8 @@ int main(int argc, char* argv[])
 		}
 		else {
 			// Use tile image filter to create 3D image from provided files
-			std::string volume_filename = createVolumeFromFiles(argv[2], atoi(argv[3]));
+			TileFilter tile_filter = TileFilter(argv[2], atoi(argv[3]));
+			std::string volume_filename = tile_filter.createVolume();
 			if(volume_filename.empty()) {
 				// file was not created
 				std::cerr << "ERROR: Could not create 3D image" << std::endl;
@@ -83,7 +86,8 @@ int main(int argc, char* argv[])
 				}
 				else {
 					// apply median filter
-					std::string median_filename = medianFilter(argv[3], atoi(argv[4]));
+					SmoothingFilters median_filter = SmoothingFilters(argv[3]);
+					std::string median_filename = median_filter.applyMedianFilter(atoi(argv[4]));
 					if (median_filename.empty()) {
 						// file was not created
 						std::cerr << "ERROR: Could not create median image" << std::endl;
