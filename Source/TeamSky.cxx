@@ -86,7 +86,8 @@ int main(int argc, char* argv[])
 				}
 				else {
 					// apply median filter
-					std::string median_filename = medianFilter(argv[3], atoi(argv[4]));
+					SmoothingFilters median_filter = SmoothingFilters(argv[3]);
+					std::string median_filename = median_filter.applyMedianFilter(atoi(argv[4]));
 					if (median_filename.empty()) {
 						// file was not created
 						std::cerr << "ERROR: Could not create median image" << std::endl;
@@ -106,15 +107,16 @@ int main(int argc, char* argv[])
 				}
 				else {
 					// apply discrete gaussian filter
-					std::string dgaus_filename = DiscreteGaussianImageFilter(argv[3], atoi(argv[4]));
+					SmoothingFilters dgaus_filter = SmoothingFilters(argv[3]);
+					std::string dgaus_filename = dgaus_filter.applyDiscreteGaussianFilter(atoi(argv[4]));
 					if (dgaus_filename.empty()) {
 						// file was not created
-						std::cerr << "ERROR: Could not create median image" << std::endl;
+						std::cerr << "ERROR: Could not create image" << std::endl;
 						return EXIT_FAILURE;
 					}
 					else {
 						// file was created
-						std::cout << "median image created: " << dgaus_filename << std::endl;
+						std::cout << "discrete Gaussian image created: " << dgaus_filename << std::endl;
 					}
 				}
 			}

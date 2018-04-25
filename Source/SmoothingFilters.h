@@ -3,6 +3,7 @@
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
 #include "itkMedianImageFilter.h"
+#include "itkDiscreteGaussianImageFilter.h"
 //#include "itksys/SystemTools.hxx"
 
 #include <string>
@@ -14,16 +15,18 @@ class SmoothingFilters
 {
 private:
 	// Median filter items
-	typedef unsigned char MedPixelType;
-	typedef itk::Image<MedPixelType, 3> MedImageType;
-	typedef itk::ImageFileReader<MedImageType> MedReaderType;
-	typedef itk::ImageFileWriter<MedImageType> MedWriterType;
-	typedef itk::MedianImageFilter<MedImageType, MedImageType> MedFilterType;
+	typedef unsigned char PixelType;
+	typedef itk::Image<PixelType, 3> ImageType;
+	typedef itk::ImageFileReader<ImageType> ReaderType;
+	typedef itk::ImageFileWriter<ImageType> WriterType;
+	typedef itk::MedianImageFilter<ImageType, ImageType> MedFilterType;
+	typedef itk::DiscreteGaussianImageFilter<ImageType, ImageType> DGausFilterType;
 
 	char* filename;
-	MedReaderType::Pointer med_reader;
-	MedWriterType::Pointer med_writer;
+	ReaderType::Pointer filter_reader;
+	WriterType::Pointer filter_writer;
 	MedFilterType::Pointer med_filter;
+	DGausFilterType::Pointer dgaus_filter;
 
 public:
 	// Constructor
@@ -37,6 +40,7 @@ public:
 	Returns empty string, "", if an error occured.
 	*/
 	std::string applyMedianFilter(int r);
+	std::string applyDiscreteGaussianFilter(int v);
 };
 
 #endif
