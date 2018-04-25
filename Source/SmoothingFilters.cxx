@@ -15,9 +15,10 @@
 SmoothingFilters::SmoothingFilters(char* file)
 {
 	filename = file;
-	med_reader = MedReaderType::New();
-	med_writer = MedWriterType::New();
+	filter_reader = ReaderType::New();
+	filter_writer = WriterType::New();
 	med_filter = MedFilterType::New();
+	dgaus_filter = DGausFilterType::New();
 }
 
 /*
@@ -40,23 +41,60 @@ std::string SmoothingFilters::applyMedianFilter(int r)
 	}
 
 	// Read image from file
-	med_reader->SetFileName(filename);
+	filter_reader->SetFileName(filename);
 
 	// Setup and apply median filter with radius r
 	MedFilterType::InputSizeType radius;
 	radius.Fill(r);
 	med_filter->SetRadius(radius);
-	med_filter->SetInput(med_reader->GetOutput());
+	med_filter->SetInput(filter_reader->GetOutput());
 	med_filter->Update();
 
 	// write to filesystem and return file name
 	std::stringstream outfile;
 	outfile << "out_" << r << "_median.dcm";
 
-	med_writer->SetInput(med_filter->GetOutput());
-	med_writer->SetFileName(outfile.str().c_str());
+	filter_writer->SetInput(med_filter->GetOutput());
+	filter_writer->SetFileName(outfile.str().c_str());
 	try {
-		med_writer->Update();
+		filter_writer->Update();
+	}
+	catch (itk::ExceptionObject& e) {
+		std::cerr << e << std::endl;
+		std::cerr << "ERROR: Could not create file: " << outfile.str() << std::endl;
+		return ""; // error, file not saved
+	}
+	return outfile.str();
+}
+std::string SmoothingFilters::applyDiscreteGaussianFilter(int v)
+{
+	// testing
+	printf("Applying discrete Gaussian filter with a variance of %d to file: %s\n", v, filename);
+
+	// check that file exists
+	struct stat file_stats;
+	if (stat(filename, &file_stats) != 0) {
+		std::cerr << "ERROR: Could not read file: " << filename << std::endl;
+		return ""; // stat error, no files read
+	}
+
+	// Read image from file
+	filter_reader->SetFileName(filename);
+
+	// Setup and apply median filter with variance v
+	DGausFilterType::ArrayType variance;
+	dgaus_filter->SetVariance(v);
+	dgaus_filter->SetInput(filter_reader->GetOutput());
+	dgaus_filter->Update();
+
+	// write to filesystem and return file name
+	std::stringstream outfile;
+	outfile << "out_" << v << "_dGaus.dcm";
+
+	filter_writer->SetInput(dgaus_filter->GetOutput());
+	filter_writer->SetFileName(outfile.str().c_str());
+	try {
+		filter_writer->Update();
 	}
 	catch (itk::ExceptionObject& e) {
 		std::cerr << e << std::endl;

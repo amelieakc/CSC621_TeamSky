@@ -98,6 +98,27 @@ int main(int argc, char* argv[])
 						std::cout << "median image created: " << median_filename << std::endl;
 					}
 				}
+			}else if(strcmp(argv[2], "dgaussian") == 0) {
+				// Median filter requires 2 additional args: file and radius
+				if (argc != 5) {
+					std::cerr << "ERROR: Invalid number of args" << std::endl;
+					std::cerr << "Usage: TeamSky.exe -f dgaussian image_file variance" << std::endl;
+					return EXIT_FAILURE;
+				}
+				else {
+					// apply discrete gaussian filter
+					SmoothingFilters dgaus_filter = SmoothingFilters(argv[3]);
+					std::string dgaus_filename = dgaus_filter.applyDiscreteGaussianFilter(atoi(argv[4]));
+					if (dgaus_filename.empty()) {
+						// file was not created
+						std::cerr << "ERROR: Could not create image" << std::endl;
+						return EXIT_FAILURE;
+					}
+					else {
+						// file was created
+						std::cout << "discrete Gaussian image created: " << dgaus_filename << std::endl;
+					}
+				}
 			}
 			else {
 				std::cerr << "ERROR: Unknown filter type: " << argv[2] << std::endl;
