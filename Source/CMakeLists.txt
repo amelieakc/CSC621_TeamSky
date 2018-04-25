@@ -1,17 +1,20 @@
-# This is the root ITK CMakeLists file.
-cmake_minimum_required(VERSION 2.8.12)
-if(COMMAND CMAKE_POLICY)
-  cmake_policy(SET CMP0003 NEW)
-endif()
 
+cmake_minimum_required(VERSION 2.8)
 
-# This project is designed to be built outside the Insight source tree.
-project(TeamSky)
+project(MutualInformationAffine)
 
-# Find ITK.
 find_package(ITK REQUIRED)
 include(${ITK_USE_FILE})
+if (ITKVtkGlue_LOADED)
+  find_package(VTK REQUIRED)
+  include(${VTK_USE_FILE})
+endif()
 
-add_executable(TeamSky TeamSky.cxx )
+add_executable(MutualInformationAffine MutualInformationAffine.cxx)
 
-target_link_libraries(TeamSky ${ITK_LIBRARIES})
+if( "${ITK_VERSION_MAJOR}" LESS 4 )
+  target_link_libraries(MutualInformationAffine ITKReview ${ITK_LIBRARIES})
+else( "${ITK_VERSION_MAJOR}" LESS 4 )
+  target_link_libraries(MutualInformationAffine ${ITK_LIBRARIES})
+endif( "${ITK_VERSION_MAJOR}" LESS 4 )
+
