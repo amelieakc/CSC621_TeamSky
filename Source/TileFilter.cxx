@@ -1,3 +1,4 @@
+#include "TileFilter.h"
 
 #include "itkImage.h"
 #include "itkImageFileReader.h"
@@ -9,10 +10,15 @@
 #include <string>
 #include <stdio.h>
 #include <sys/stat.h>
-#include <typeinfo>
 
-// Function prototypes
-std::string createVolumeFromFiles(char*, int);
+TileFilter::TileFilter(char* dir, int num)
+{
+	image_dir = dir;
+	num_files = num;
+	vol_reader = VolReaderType::New();
+	vol_writer = VolWriterType::New();
+	tiler = TilerType::New();
+}
 
 /*
 	Create a 3D image(stack of 2D images) from set of 2D image files. 
@@ -21,33 +27,18 @@ std::string createVolumeFromFiles(char*, int);
 	return: Name of file where 3D image has been written to.
 		Returns empty string, "", if an error occured. 
 */
-std::string createVolumeFromFiles(char* image_dir, int num_files)
+std::string TileFilter::createVolume()
 {
-	typedef unsigned char VolPixelType;
-
-	const unsigned int VolInputDimension = 2;
-	const unsigned int VolOutputDimension = 3;
-
-	typedef itk::Image<VolPixelType, VolInputDimension> VolInputImageType;
-	typedef itk::Image<VolPixelType, VolOutputDimension> VolOutputImageType;
-
-	typedef itk::ImageFileReader<VolInputImageType> VolReaderType;
-	typedef itk::ImageFileWriter<VolOutputImageType> VolWriterType;
-
-	typedef itk::TileImageFilter <VolInputImageType, VolOutputImageType> TilerType;
-
 	// testing
 	printf("Reading %d files from directrory: %s\n", num_files, image_dir);
 
-	itk::FixedArray<unsigned int, VolOutputDimension> layout;
+	itk::FixedArray<unsigned int, 3> layout;
 	layout[0] = 1;
 	layout[1] = 1;
 	layout[2] = 0;
 
-	TilerType::Pointer tiler = TilerType::New();
 	tiler->SetLayout(layout);
 
-	VolReaderType::Pointer vol_reader = VolReaderType::New();
 	VolInputImageType::Pointer inputImageTile;
 
 	struct stat file_stats; // check image file status
@@ -80,15 +71,15 @@ std::string createVolumeFromFiles(char* image_dir, int num_files)
 	std::stringstream outfile;
 	outfile << "out_" << num_files << "_3D.dcm";
 	
-	VolWriterType::Pointer vol_writer = VolWriterType::New();
 	vol_writer->SetInput(tiler->GetOutput());
 	vol_writer->SetFileName(outfile.str().c_str());
 	try {
 		vol_writer->Update();
-		return outfile.str();
 	}
 	catch (itk::ExceptionObject& e) {
+		std::cerr << e << std::endl;
 		std::cerr << "ERROR: Could not create file: " << outfile.str() << std::endl;
 		return ""; // error, file not saved
 	}
+	return outfile.str();
 }
