@@ -6,6 +6,8 @@
 #include "itkScalarToRGBPixelFunctor.h"
 #include "itkUnaryFunctorImageFilter.h"
 #include "itkGradientMagnitudeRecursiveGaussianImageFilter.h"
+#include "itkLabelStatisticsImageFilter.h"
+#include "itkChangeLabelImageFilter.h"
 
 #include <sys/stat.h>
 #include <stdio.h>
@@ -22,16 +24,14 @@ WatershedSegmentation::WatershedSegmentation(char* file)
 
 /*
 Apply watershed segmentation to the specified image.
+
 threshold: threshold value that segmentation will use
 level: level value that segmentation will use
 return: Name of file where segmented image has been written to.
 Returns empty string, "", if an error occured.
 */
-std::string WatershedSegmentation::applyWatershedSegmentation(float threshold, float level)
+std::string WatershedSegmentation::applyWatershedSegmentation(float threshold, float level, int labelValue)
 {
-	// for testing
-	std::cout << "Watershed segmentation on file " << filename << " with threshold: " << threshold << ", level: " << level << std::endl;
-
 	// check that file exists
 	struct stat file_stats;
 	if (stat(filename, &file_stats) != 0) {
@@ -49,21 +49,26 @@ std::string WatershedSegmentation::applyWatershedSegmentation(float threshold, f
 	gradientMagnitudeFilter->SetSigma(1.0);
 
 	// Apply watershed filter
-	typedef itk::WatershedImageFilter<SegImageType> WatershedFilterType;
 	WatershedFilterType::Pointer watershedFilter = WatershedFilterType::New();
 	watershedFilter->SetInput(gradientMagnitudeFilter->GetOutput());
 	watershedFilter->SetThreshold(threshold);
 	watershedFilter->SetLevel(level);
 
-	// note: labelled image is stored in watershedFilter->GetOutput()
+	// Apply label manipulation
+	watershedFilter->Update();
+	ChangeLabelImageFilterType::Pointer changeLabelFilter = ChangeLabelImageFilterType::New();
+	// remove labels from the orginal labelImage produced by Watershed Segmentation
+	updateLabels(watershedFilter->GetOutput(), gradientMagnitudeFilter->GetOutput(), changeLabelFilter, labelValue);
 
 	// Encode label image into color image
 	typedef itk::Functor::ScalarToRGBPixelFunctor<unsigned long> ColorMapFunctorType;
 	typedef WatershedFilterType::OutputImageType LabeledImageType;
-	
 	typedef itk::UnaryFunctorImageFilter<LabeledImageType, RGBImageType, ColorMapFunctorType> ColorMapFilterType;
 	ColorMapFilterType::Pointer colorMapFilter = ColorMapFilterType::New();
-	colorMapFilter->SetInput(watershedFilter->GetOutput());
+	//colorMapFilter->SetInput(watershedFilter->GetOutput());
+
+	// use updated labelImage
+	colorMapFilter->SetInput(changeLabelFilter->GetOutput());
 
 	// write to filesystem and return file name
 	std::stringstream outfile;
@@ -80,4 +85,85 @@ std::string WatershedSegmentation::applyWatershedSegmentation(float threshold, f
 		return "";
 	}
 	return outfile.str();
+}
+
+/*
+Update the labelImage produced by watershed segmentation.
+Used to remove labels that do not meet a specified criteria.
+
+labelImage: label image produced by watershed segmentation.
+originalImage: image produced by gradient image filter.
+changeLabelImageFilter: ChangeLabelImageFilter that maps labels to background pixels.
+	changeLabelImageFilter is modified by this function. 
+value: the number that determines the criteria that decides if a label should be removed.
+return: void.
+*/
+void WatershedSegmentation::updateLabels(
+	WatershedFilterType::OutputImageType::Pointer labelImage, 
+	SegImageType::Pointer originalImage,
+	ChangeLabelImageFilterType::Pointer changeLabelImageFilter,
+	int labelValue = 0)
+{
+	// Get statistics on the original labelImage produced by watershed segmentation
+	LabelStatisticsImageFilterType::Pointer labelStatisticsImageFilter = LabelStatisticsImageFilterType::New();
+	labelStatisticsImageFilter->SetLabelInput(labelImage);
+	labelStatisticsImageFilter->SetInput(originalImage);
+	labelStatisticsImageFilter->Update();
+
+	// typedefs for LabelStatisticsImageFilter for saving typing/space further down
+	typedef LabelStatisticsImageFilterType::LabelPixelType LabelPixelType;
+	typedef LabelStatisticsImageFilterType::ValidLabelValuesContainerType ValidLabelValuesType;
+
+	// for testing
+	std::cout << std::endl;
+	std::cout << "Before number of labels: " << labelStatisticsImageFilter->GetNumberOfLabels() << std::endl;
+
+	// Background pixel (black) to set removed labels to
+	const WatershedFilterType::OutputImagePixelType background = 0;
+
+	// Used to track total label stats (average count of all segments)
+	long avgCount = 0;
+	int labelMean = 0;
+	int maxLabelMean = -1000000;
+
+	// Iterate through the valid labels in the labelImage
+	int labelCount = 0;
+	for (ValidLabelValuesType::const_iterator vIt = labelStatisticsImageFilter->GetValidLabelValues().begin();
+		vIt != labelStatisticsImageFilter->GetValidLabelValues().end();
+		++vIt)
+	{
+		if (labelStatisticsImageFilter->HasLabel(*vIt)) {
+
+			// Remove labels that have count less than the argument: labelValue
+			LabelPixelType labelImageValue = *vIt;
+			labelCount = labelStatisticsImageFilter->GetCount(labelImageValue);
+			if (labelCount <= labelValue) {
+				changeLabelImageFilter->SetChange(labelImageValue, background);
+			}
+			// Remove labels for dark regions (extra regions on the edge)
+			labelMean = labelStatisticsImageFilter->GetMean(labelImageValue);
+			maxLabelMean = labelMean > maxLabelMean ? labelMean : maxLabelMean;
+			if (labelMean < 5) {
+				changeLabelImageFilter->SetChange(labelImageValue, background);
+			}
+
+			// For tracking total label stats
+			avgCount += labelCount;
+		}
+	}
+	changeLabelImageFilter->SetInput(labelStatisticsImageFilter->GetLabelInput());
+	changeLabelImageFilter->Update();
+
+	// for testing
+	std::cout << "Average label count: " << avgCount / labelStatisticsImageFilter->GetNumberOfLabels() << std::endl;
+
+	// Used to get statistics on new labelImage produced by changeLabelImageFilter
+	LabelStatisticsImageFilterType::Pointer after_labelStatisticsImageFilter = LabelStatisticsImageFilterType::New();
+	after_labelStatisticsImageFilter->SetLabelInput(changeLabelImageFilter->GetOutput());
+	after_labelStatisticsImageFilter->SetInput(originalImage);
+	after_labelStatisticsImageFilter->Update();
+
+	// for testing
+	std::cout << "After number of labels: " << after_labelStatisticsImageFilter->GetNumberOfLabels() << std::endl;
+	std::cout << std::endl;
 }

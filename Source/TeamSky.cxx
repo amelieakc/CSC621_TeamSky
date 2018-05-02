@@ -17,7 +17,8 @@ int main(int argc, char* argv[])
 		printf("%-30s\n", "Team Sky ITK");
 		printf("%-30s %-30s\n", "-h", "Display help menu");
 		printf("%-30s %-30s\n", "-r", "Registration");
-		printf("%-30s %-30s\n", "-s image threshold level", "Apply watershed segmentation with given threshold and level");
+		printf("%-30s %-30s\n", "-s image thresh level [labelVal]", "Apply watershed segmentation with threshold and level.");
+		printf("%-30s %-30s\n", " ", "Remove labels that have a count less than labelVal (defaults to 0). ");
 		printf("%-30s %-30s\n", "-3D image_dir num", "Create 3D image from multiple 2D images");
 		printf("%-30s %-30s\n", "-f filter_name [args]", "Apply filter to image. Filters supported: median");
 		std::cout << std::endl;
@@ -30,14 +31,19 @@ int main(int argc, char* argv[])
 	else if(strcmp(argv[1], "-s") == 0) {
 		std::cout << "Watershed Segmentation" << std::endl;
 		// Check watershed segmentation args
-		if(argc != 5) {
+		if(argc < 5) {
 			std::cerr << "ERROR: Invalid number of args" << std::endl;
 			std::cerr << "Usage: TeamSky.exe -s image threshold level" << std::endl;
 			return EXIT_FAILURE;
 		}
 		else {
 			WatershedSegmentation watershed = WatershedSegmentation(argv[2]);
-			std::string seg_filename = watershed.applyWatershedSegmentation(atof(argv[3]), atof(argv[4]));
+			std::string seg_filename;
+			if (argc < 6)
+				seg_filename = watershed.applyWatershedSegmentation(atof(argv[3]), atof(argv[4]));
+			else
+				seg_filename = watershed.applyWatershedSegmentation(atof(argv[3]), atof(argv[4]), atoi(argv[5]));
+
 			if(seg_filename.empty()) {
 				// file was not created or segmentation failed
 				std::cerr << "ERROR: Could not complete watershed segmentation" << std::endl;
