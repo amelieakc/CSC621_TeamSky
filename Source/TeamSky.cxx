@@ -99,7 +99,7 @@ int main(int argc, char* argv[])
 					}
 				}
 			}else if(strcmp(argv[2], "dgaussian") == 0) {
-				// Median filter requires 2 additional args: file and radius
+				// Discrete Gaussian filter requires 2 additional args: file and variance
 				if (argc != 5) {
 					std::cerr << "ERROR: Invalid number of args" << std::endl;
 					std::cerr << "Usage: TeamSky.exe -f dgaussian image_file variance" << std::endl;
@@ -117,6 +117,27 @@ int main(int argc, char* argv[])
 					else {
 						// file was created
 						std::cout << "discrete Gaussian image created: " << dgaus_filename << std::endl;
+					}
+				}
+			}else if (strcmp(argv[2], "bilateral") == 0) {
+				// bilateral filter requires 3 additional args: file and domain_sigam range_sigam
+				if (argc != 6) {
+					std::cerr << "ERROR: Invalid number of args" << std::endl;
+					std::cerr << "Usage: TeamSky.exe -f bilateral image_file domain_sigam range_sigam" << std::endl;
+					return EXIT_FAILURE;
+				}
+				else {
+					// apply discrete gaussian filter
+					SmoothingFilters bilateral_filter = SmoothingFilters(argv[3]);
+					std::string bilateral_filename = bilateral_filter.applyBilateralFilter(atoi(argv[4]), atoi(argv[5]));
+					if (bilateral_filename.empty()) {
+						// file was not created
+						std::cerr << "ERROR: Could not create image" << std::endl;
+						return EXIT_FAILURE;
+					}
+					else {
+						// file was created
+						std::cout << "Bilateral image created: " << bilateral_filename << std::endl;
 					}
 				}
 			}
