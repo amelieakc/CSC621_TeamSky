@@ -3,7 +3,6 @@
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
-#include "itkMedianImageFilter.h"
 #include "itksys/SystemTools.hxx"
 
 #include <iostream>
@@ -19,6 +18,7 @@ SmoothingFilters::SmoothingFilters(char* file)
 	filter_writer = WriterType::New();
 	med_filter = MedFilterType::New();
 	dgaus_filter = DGausFilterType::New();
+	bilateral_filter = BilateralFilterType::New();
 }
 
 /*
@@ -92,6 +92,43 @@ std::string SmoothingFilters::applyDiscreteGaussianFilter(int v)
 	outfile << "out_" << v << "_dGaus.dcm";
 
 	filter_writer->SetInput(dgaus_filter->GetOutput());
+	filter_writer->SetFileName(outfile.str().c_str());
+	try {
+		filter_writer->Update();
+	}
+	catch (itk::ExceptionObject& e) {
+		std::cerr << e << std::endl;
+		std::cerr << "ERROR: Could not create file: " << outfile.str() << std::endl;
+		return ""; // error, file not saved
+	}
+	return outfile.str();
+}
+std::string SmoothingFilters::applyBilateralFilter(int d, int r)
+{
+	// testing
+	printf("Applying bilateral filter with domainSigma = %d and rangeSigma = %d to file: %s\n", d, r, filename);
+
+	// check that file exists
+	struct stat file_stats;
+	if (stat(filename, &file_stats) != 0) {
+		std::cerr << "ERROR: Could not read file: " << filename << std::endl;
+		return ""; // stat error, no files read
+	}
+
+	// Read image from file
+	filter_reader->SetFileName(filename);
+
+	// Setup and apply bilateral filter with Sigmas
+	bilateral_filter->SetInput(filter_reader->GetOutput());
+	bilateral_filter->SetDomainSigma(d);
+	bilateral_filter->SetRangeSigma(r);
+	bilateral_filter->Update();
+
+	// write to filesystem and return file name
+	std::stringstream outfile;
+	outfile << "out_" << d << "_" << r << "_bilateral.dcm";
+
+	filter_writer->SetInput(bilateral_filter->GetOutput());
 	filter_writer->SetFileName(outfile.str().c_str());
 	try {
 		filter_writer->Update();
