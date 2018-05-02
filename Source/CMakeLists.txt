@@ -1,7 +1,7 @@
 
 cmake_minimum_required(VERSION 2.8)
 
-project(MutualInformationAffine)
+project(WarpImageFilter)
 
 find_package(ITK REQUIRED)
 include(${ITK_USE_FILE})
@@ -10,11 +10,11 @@ if (ITKVtkGlue_LOADED)
   include(${VTK_USE_FILE})
 endif()
 
-add_executable(MutualInformationAffine MutualInformationAffine.cxx)
+add_executable(WarpImageFilter WarpImageFilter.cxx)
 
 if( "${ITK_VERSION_MAJOR}" LESS 4 )
-  target_link_libraries(MutualInformationAffine ITKReview ${ITK_LIBRARIES})
+  target_link_libraries(WarpImageFilter ITKReview ${ITK_LIBRARIES})
 else( "${ITK_VERSION_MAJOR}" LESS 4 )
-  target_link_libraries(MutualInformationAffine ${ITK_LIBRARIES})
+  target_link_libraries(WarpImageFilter ${ITK_LIBRARIES})
 endif( "${ITK_VERSION_MAJOR}" LESS 4 )
 
