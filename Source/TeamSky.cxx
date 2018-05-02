@@ -15,12 +15,14 @@ int main(int argc, char* argv[])
 		// display help	
 		//std::cout << "Team Sky ITK" << std::endl;
 		printf("%-30s\n", "Team Sky ITK");
-		printf("%-30s %-30s\n", "-h", "Display help menu");
+		printf("%-30s %-30s\n", "-h, --help", "Display help menu");
 		printf("%-30s %-30s\n", "-r", "Registration");
 		printf("%-30s %-30s\n", "-s image thresh level [labelVal]", "Apply watershed segmentation with threshold and level.");
 		printf("%-30s %-30s\n", " ", "Remove labels that have a count less than labelVal (defaults to 0). ");
 		printf("%-30s %-30s\n", "-3D image_dir num", "Create 3D image from multiple 2D images");
-		printf("%-30s %-30s\n", "-f filter_name [args]", "Apply filter to image. Filters supported: median");
+		printf("%-30s %-30s\n", "-f filter_name [args]", "Apply filter to image. Filters supported: median, ");
+		printf("%-30s %-30s\n", " ", "dgaussian, bilateral");
+		printf("%-30s %-30s\n", " ", "Use \"-f filter_name\" without args to see usage. ");
 		std::cout << std::endl;
 		// add more options
 	}

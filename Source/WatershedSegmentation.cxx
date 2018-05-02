@@ -124,7 +124,6 @@ void WatershedSegmentation::updateLabels(
 	// Used to track total label stats (average count of all segments)
 	long avgCount = 0;
 	int labelMean = 0;
-	int maxLabelMean = -1000000;
 
 	// Iterate through the valid labels in the labelImage
 	int labelCount = 0;
@@ -142,7 +141,6 @@ void WatershedSegmentation::updateLabels(
 			}
 			// Remove labels for dark regions (extra regions on the edge)
 			labelMean = labelStatisticsImageFilter->GetMean(labelImageValue);
-			maxLabelMean = labelMean > maxLabelMean ? labelMean : maxLabelMean;
 			if (labelMean < 5) {
 				changeLabelImageFilter->SetChange(labelImageValue, background);
 			}
