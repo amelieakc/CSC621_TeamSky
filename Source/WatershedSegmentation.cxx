@@ -145,6 +145,7 @@ void WatershedSegmentation::updateLabels(
 				changeLabelImageFilter->SetChange(labelImageValue, background);
 			}
 			// Remove labels for dark regions (extra regions on the edge)
+			
 			labelMean = labelStatisticsImageFilter->GetMean(labelImageValue);
 			if (labelMean < 5) {
 				changeLabelImageFilter->SetChange(labelImageValue, background);
