@@ -1,2 +1,13 @@
 Build/
 build/
+*~
+
+.DS_Store
+[Dd]esktop.ini
+._*
+Thumbs.db
+
+xcuserdata/
+
+*.stackdump
+*.lnk
