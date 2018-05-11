@@ -37,6 +37,14 @@ Since no filter arguments are provided, usage information for median filter will
 Apply median filter with a radius of 2 to the image file, image.dcm.<br />
 <br />
 
+`TeamSky.exe -f dgaussian image.dcm 2`<br />
+Apply discrete gaussian filter with a variance of 2 to the image file, image.dcm.<br />
+<br />
+
+`TeamSky.exe -f bilateral image.dcm 4 8`<br />
+Apply bilateral filter with a domain sigma of 4 and a range sigma of 8 to the image file, image.dcm.<br />
+<br />
+
 `TeamSky.exe -s image.dcm 0.0025 0.25`<br />
 Apply watershed segmentation to image.dcm with threshold set to 0.0025 and level set to 0.25. It is recommended to apply some smoothing filter to the image before applying watershed segmentation.<br />
 <br />
