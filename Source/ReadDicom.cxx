@@ -3,8 +3,15 @@
 #include "itkGDCMSeriesFileNames.h"
 #include "itkImageSeriesReader.h"
 #include "itkImageFileWriter.h"
+#include <string>
 
-int readDicom(char* dir)
+/*
+Create a 3D image from set of 2D dicom image files.
+dir: Directory where images are located
+return: Name of file where 3D image has been written to.
+Returns empty string, "", if an error occured.
+*/
+std::string readDicom(char* dir)
 {
 	std::string dirName = dir; // dicom directory
 
@@ -31,8 +38,8 @@ int readDicom(char* dir)
 		// Check if there are any valid DICOM images in the directory
 		if (seriesItr == seriesEnd)
 		{
-			std::cout << "No DICOMs in: " << dirName << std::endl;
-			return EXIT_SUCCESS;
+			std::cout << "No DICOM images found in: " << dirName << std::endl;
+			return "";
 		}
 
 		// Print series
@@ -42,50 +49,51 @@ int readDicom(char* dir)
 			++seriesItr;
 		}
 
+		// Read the first DICOM series found
 		seriesItr = seriesUID.begin();
-		while (seriesItr != seriesUID.end())
+		std::string seriesIdentifier;
+		seriesIdentifier = seriesItr->c_str();
+		//seriesItr++;
+
+		using FileNamesContainer = std::vector< std::string >;
+		FileNamesContainer fileNames =
+			nameGenerator->GetFileNames(seriesIdentifier);
+
+		using ReaderType = itk::ImageSeriesReader< ImageType >;
+		ReaderType::Pointer reader = ReaderType::New();
+		using ImageIOType = itk::GDCMImageIO;
+		ImageIOType::Pointer dicomIO = ImageIOType::New();
+		reader->SetImageIO(dicomIO);
+		reader->SetFileNames(fileNames);
+		reader->Update();
+
+		using WriterType = itk::ImageFileWriter< ImageType >;
+		WriterType::Pointer writer = WriterType::New();
+		std::string outfile;
+
+		outfile = dirName + std::string("/") + "image_sequence.nrrd";
+
+		writer->SetFileName(outfile);
+		writer->UseCompressionOn();
+		writer->SetInput(reader->GetOutput());
+		std::cout << "Writing: " << outfile << std::endl;
+		try
 		{
-			std::string seriesIdentifier;
-			seriesIdentifier = seriesItr->c_str();
-			seriesItr++;
-
-			using FileNamesContainer = std::vector< std::string >;
-			FileNamesContainer fileNames =
-				nameGenerator->GetFileNames(seriesIdentifier);
-
-			using ReaderType = itk::ImageSeriesReader< ImageType >;
-			ReaderType::Pointer reader = ReaderType::New();
-			using ImageIOType = itk::GDCMImageIO;
-			ImageIOType::Pointer dicomIO = ImageIOType::New();
-			reader->SetImageIO(dicomIO);
-			reader->SetFileNames(fileNames);
-			reader->Update();
-
-			using WriterType = itk::ImageFileWriter< ImageType >;
-			WriterType::Pointer writer = WriterType::New();
-			std::string outFileName;
-
-			outFileName = dirName + std::string("/") + "image_sequence.nrrd";
-
-			writer->SetFileName(outFileName);
-			writer->UseCompressionOn();
-			writer->SetInput(reader->GetOutput());
-			std::cout << "Writing: " << outFileName << std::endl;
-			try
-			{
-				writer->Update();
-			}
-			catch (itk::ExceptionObject &ex)
-			{
-				std::cout << ex << std::endl;
-				continue;
-			}
+			writer->Update();
 		}
+		catch (itk::ExceptionObject& e)
+		{
+			std::cout << e << std::endl;
+			std::cerr << "ERROR: Could not create file: " << outfile << std::endl;
+			return "";
+		}
+		return outfile;
 	}
-	catch (itk::ExceptionObject &ex)
+	catch (itk::ExceptionObject& e)
 	{
-		std::cout << ex << std::endl;
-		return EXIT_FAILURE;
+		std::cerr << e << std::endl;
+		std::cerr << "ERROR: Could not create 3D image" << std::endl;
+		return "";
 	}
 	return EXIT_SUCCESS;
 }
