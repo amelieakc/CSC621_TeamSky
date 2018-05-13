@@ -5,6 +5,7 @@
 #include "WatershedSegmentation.h"
 #include "WatershedSegmentation.cxx"
 #include "ReadDicom.cxx"
+#include "WarpImageFilter.cxx"
 
 #include <iostream>
 #include <stdio.h>
@@ -17,7 +18,8 @@ int main(int argc, char* argv[])
 		//std::cout << "Team Sky ITK" << std::endl;
 		printf("%-30s\n", "Team Sky ITK");
 		printf("%-30s %-30s\n", "-h, --help", "Display help menu");
-		printf("%-30s %-30s\n", "-r", "Registration");
+		printf("%-30s %-30s\n", "-r filter_name [args]", "Apply registration method given by filter_name.");
+		printf("%-30s %-30s\n", " ", "Filters supported: warp");
 		printf("%-30s %-30s\n", "-s image thresh level [labelVal]", "Apply watershed segmentation with threshold and level.");
 		printf("%-30s %-30s\n", " ", "Remove labels that have a count less than labelVal (defaults to 0). ");
 		printf("%-30s %-30s\n", "-3D image_dir num", "Create 3D image from multiple 2D images.");
@@ -28,9 +30,42 @@ int main(int argc, char* argv[])
 		std::cout << std::endl;
 		// add more options
 	}
-	else if(strcmp(argv[1], "-r") == 0) {
+	else if (strcmp(argv[1], "-r") == 0) {
 		std::cout << "Registration" << std::endl;
 		// do registration stuff
+		if (argc >= 3) {
+			if (strcmp(argv[2], "warp") == 0) {
+				std::cout << "Applying warp image filter" << std::endl;
+				if (argc >= 5) {
+					// do warpimagefilter with argv[3] and argv[4]
+					std::string warp_filename = applyWarpImageFilter(argv[3], argv[4]);
+					if (warp_filename.empty()) {
+						// file was not created or warp image filter failed
+						std::cerr << "ERROR: Could not complete warp image filter" << std::endl;
+						return EXIT_FAILURE;
+					}
+					else {
+						std::cout << "Warp image filter complete" << std::endl;
+					}
+				}
+				else {
+					// did not provide fixed and moving images
+					std::cerr << "ERROR: Did not provide fixed and moving images" << std::endl;
+					std::cerr << "USage: TeamSky.exe -r warp image1 image2";
+					return EXIT_FAILURE;
+				}
+			}
+			else {
+				// unknown registration method
+				std::cerr << "ERROR: Unknown registration method: " << argv[2] << std::endl;
+				return EXIT_FAILURE;
+			}
+		}
+		else {
+			// invalid number of args
+			std::cerr << "ERROR: Invalid number of arguments" << std::endl;
+			return EXIT_FAILURE;
+		}
 	}
 	else if(strcmp(argv[1], "-s") == 0) {
 		std::cout << "Watershed Segmentation" << std::endl;

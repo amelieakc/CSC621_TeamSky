@@ -9,6 +9,7 @@
 #endif
 
 #include "itkWarpImageFilter.h"
+#include <string>
 
 const     unsigned int   Dimension = 2;
 typedef   unsigned char  PixelType;
@@ -17,25 +18,24 @@ typedef   itk::Image< PixelType, Dimension > ImageType;
 
 typedef itk::ImageFileReader<ImageType> ImageReaderType;
 
-static void CreateMovingImage(ImageType::Pointer image);
+//static void CreateMovingImage(ImageType::Pointer image);
   
-int main(int, char *[])
+std::string applyWarpImageFilter(char* fixed_filename, char* moving_filename)
 {
   typedef   float          VectorComponentType;
 
   typedef   itk::Vector< VectorComponentType, Dimension >    VectorType;
   typedef   itk::Image< VectorType,  Dimension >   DeformationFieldType;
 
+	// Read in fixed and moving images from file
     ImageReaderType::Pointer ImageReader = ImageReaderType::New();
 
-    ImageReader -> SetFileName("./001.dcm");
-    
+    ImageReader -> SetFileName(fixed_filename);
     ImageReader -> Update();
     ImageType:: Pointer fixedImage = ImageReader -> GetOutput();
 
     
-    ImageReader -> SetFileName("./002.dcm");
-    
+    ImageReader -> SetFileName(moving_filename);
     ImageReader -> Update();
     ImageType:: Pointer movingImage = ImageReader -> GetOutput();
 
@@ -135,14 +135,22 @@ int main(int, char *[])
   WriterType::Pointer writer =
     WriterType::New();
   writer->SetInput (  warpImageFilter->GetOutput() );
-  writer->SetFileName( "output.png" );
-  writer->Update();
+  std::string outfile = "out_warp.png";
+  writer->SetFileName(outfile);
+
+  try {
+	  writer->Update();
+  }
+  catch(itk::ExceptionObject& e) {
+	  std::cerr << e << std::endl;
+	  std::cerr << "ERROR: Could note create file: " << outfile << std::endl;
+	  return "";
+  }
   
-  return EXIT_SUCCESS;
+  return outfile;
 }
 
-
-
+/*
 void CreateMovingImage(ImageType::Pointer image)
 {
   
@@ -180,3 +188,4 @@ void CreateMovingImage(ImageType::Pointer image)
   writer->SetFileName( "moving.png" );
   writer->Update();
 }
+*/
