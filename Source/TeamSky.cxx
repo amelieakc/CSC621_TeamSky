@@ -4,6 +4,7 @@
 #include "SmoothingFilters.cxx"
 #include "WatershedSegmentation.h"
 #include "WatershedSegmentation.cxx"
+#include "ReadDicom.cxx"
 
 #include <iostream>
 #include <stdio.h>
@@ -19,10 +20,11 @@ int main(int argc, char* argv[])
 		printf("%-30s %-30s\n", "-r", "Registration");
 		printf("%-30s %-30s\n", "-s image thresh level [labelVal]", "Apply watershed segmentation with threshold and level.");
 		printf("%-30s %-30s\n", " ", "Remove labels that have a count less than labelVal (defaults to 0). ");
-		printf("%-30s %-30s\n", "-3D image_dir num", "Create 3D image from multiple 2D images");
+		printf("%-30s %-30s\n", "-3D image_dir num", "Create 3D image from multiple 2D images.");
+		printf("%-30s %-30s\n", "-dicom image_dir", "Create 3D image from multiple dicom images using GDCM.");
 		printf("%-30s %-30s\n", "-f filter_name [args]", "Apply filter to image. Filters supported: median, ");
 		printf("%-30s %-30s\n", " ", "dgaussian, bilateral");
-		printf("%-30s %-30s\n", " ", "Use \"-f filter_name\" without args to see usage. ");
+		printf("%-30s %-30s\n", " ", "Use \"-f filter_name\" without args to see usage.");
 		std::cout << std::endl;
 		// add more options
 	}
@@ -77,6 +79,28 @@ int main(int argc, char* argv[])
 			else {
 				// file was created
 				std::cout << "3D image created: " << volume_filename << std::endl;
+			}
+		}
+	}
+	else if (strcmp(argv[1], "-dicom") == 0) {
+		std::cout << "Create 3D dicom image from multiple 2D dicom images" << std::endl;
+		// Check args: image directory and number of files
+		if (argc != 3) {
+			std::cerr << "ERROR: Invalid number of args" << std::endl;
+			std::cerr << "Usage: TeamSky.exe -dicom image_dir" << std::endl;
+			return EXIT_FAILURE;
+		}
+		else {
+			// use read dicom fcn
+			std::string dicom_filename = readDicom(argv[2]);
+			if (dicom_filename.empty()) {
+				// file was not created
+				std::cerr << "ERROR: Could not create 3D image" << std::endl;
+				return EXIT_FAILURE;
+			}
+			else {
+				// file was created
+				std::cout << "3D image created: " << dicom_filename << std::endl;
 			}
 		}
 	}
