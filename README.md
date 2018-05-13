@@ -17,6 +17,7 @@ Possible args are:<br />
 | \-r | Registration |
 | \-s image threshold level [labelVal] | Watershed Segmentation on image with specified threshold and level. Remove labels who have a membership count less than labelVal, defaults to zero. |
 | \-3d image_dir num | Create 3D image from multiple 2D images. image_dir is a directory containing images named like 000000.dcm. num is the number of images you want to use in that directory from 000000.dcm through 00000N.dcm |
+| \-dicom image_dir | Create 3D image from multiple Dicom images in the same series. image_dir is a directory containing valid Dicom images. Output image is saved in the provided directory |
 | \-f filter_name [args] | Apply generic filter to image. Optional args may be required by different filter types. Filters currently supported: median, dgaussian, bilateral. |
 
 ## Examples
@@ -27,6 +28,10 @@ Display help menu.<br />
 
 `TeamSky.exe -3d ../../Images/test_set_1/ 25`<br />
 Create a 3D volume from 25 images that are in the directory ../../Images/test_set_1 named as 000000.dcm through 000024.dcm<br />
+<br />
+
+`TeamSky.exe -dicom ../../Images/0522c00001/set1`<br />
+Create a 3D volume from all Dicom images from the same series that are in the directory ../../Images/0522c00001/set1<br />
 <br />
 
 `TeamSky.exe -f median`<br />
