@@ -1,0 +1,14 @@
+ObjectType = Image
+NDims = 2
+BinaryData = True
+BinaryDataByteOrderMSB = False
+CompressedData = False
+TransformMatrix = 1 0 0 1
+Offset = -249.51172 -382.51172000000003
+CenterOfRotation = 0 0
+ElementSpacing = 0.9765625 0.9765625
+DimSize = 512 512
+AnatomicalOrientation = ??
+ElementNumberOfChannels = 2
+ElementType = MET_FLOAT
+ElementDataFile = deformation.raw
